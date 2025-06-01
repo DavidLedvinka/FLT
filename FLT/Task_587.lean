@@ -50,15 +50,13 @@ To formalize the specific property you mentioned, you would likely need to:
 * Prove that the units of such an open submonoid inherit the subspace topology
 * Show that this forms an open subgroup of the group of units
 
---------------------------------------------------------------------- -/
+---------------------------------------------------------------------
 
-import Mathlib
-
-/-
 import Mathlib.Topology.Algebra.Monoid
 import Mathlib.Algebra.Group.Units
 import Mathlib.Algebra.Group.Submonoid.Operations
 import Mathlib.Topology.Algebra.Group.Basic
+import Mathlib.Topology.Algebra.Constructions
 
 # Units of Open Submonoids Form Open Subgroups
 
@@ -75,12 +73,15 @@ form an open subgroup of the group of units.
 ## Implementation Notes
 
 We separate algebraic and topological components for maximum reusability.
+
 -/
+
+import Mathlib
 
 namespace Submonoid
 
 -- ============================================================================
--- SECTION: Algebraic Components (Algebras without Topology)
+-- SECTION: Algebraic Components (without Topology)
 -- ============================================================================
 
 section AlgebraicComponents
@@ -88,9 +89,11 @@ section AlgebraicComponents
 variable {M : Type*} [Monoid M]
 
 /-
+
 / -- The units of a submonoid, as a subset of the units of M - /
 def units (N : Submonoid M) : Set Mˣ :=
   {u : Mˣ | ↑u ∈ N}
+
 -/
 
 /-- The units of a submonoid equal the intersection N ∩ U(M) -/
@@ -150,7 +153,7 @@ lemma unitsSubgroup_carrier (N : Submonoid M) :
 end AlgebraicComponents
 
 -- ============================================================================
--- SECTION: Topological Components (Topology without algebra)
+-- SECTION: Topological Components (without algebra)
 -- ============================================================================
 
 section TopologicalComponents
@@ -159,7 +162,7 @@ variable {M : Type*} [TopologicalSpace M]
 
 /-- The coercion map from units is continuous -/
 lemma continuous_units_coe [Monoid M] : Continuous (Units.val : Mˣ → M) :=
-  continuous_coe
+  sorry -- requires a lemma in mathlib that states that coercion functions are continuous, e.g., [continuous_coe] or [Units.continuous_val] or [continuous_val]
 
 /-- Preimage of open sets under the units coercion is open -/
 lemma isOpen_units_coe_preimage [Monoid M] {U : Set M} (hU : IsOpen U) :
@@ -183,7 +186,7 @@ end TopologicalComponents
 -- SECTION: Combined Results (Algebraic + Topological)
 -- ============================================================================
 
-section AlgebraicTopologicalComponents
+section AlgebraicTopological
 
 variable {M : Type*} [Monoid M] [TopologicalSpace M]
 
@@ -218,6 +221,6 @@ theorem open_submonoid_units_eq_open_inter [ContinuousMul M] {N : Submonoid M}
   · exact isOpen_units hN
   · exact (unitsSubgroup_carrier N).symm
 
-end AlgebraicTopologicalComponents
+end AlgebraicTopological
 
 end Submonoid
