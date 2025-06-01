@@ -54,3 +54,51 @@ To formalize the specific property you mentioned, you would likely need to:
 ----------------------------------------------------------------------/
 
 import Mathlib
+
+/-- The units of a submonoid form a subgroup of the ambient units -/
+def Submonoid.unitsSubgroup {M : Type*} [Monoid M] (N : Submonoid M) :
+  Subgroup Mˣ := sorry
+
+/-- If a submonoid is open, its underlying set of units is open -/
+lemma Submonoid.isOpen_units_set {M : Type*} [TopologicalSpace M] [Monoid M]
+  {N : Submonoid M} (hN : IsOpen (N : Set M)) :
+  IsOpen {x : M | x ∈ N ∧ IsUnit x} := sorry
+
+/-- The subgroup of units inherits openness from the submonoid -/
+lemma Submonoid.unitsSubgroup_isOpen {M : Type*} [TopologicalSpace M] [Monoid M]
+  [ContinuousMul M] {N : Submonoid M} (hN : IsOpen (N : Set M)) :
+  IsOpen (N.unitsSubgroup : Set Mˣ) := sorry
+
+section AlgebraicComponents
+
+/-- Units of a submonoid, as a subset of the ambient units -/
+def Submonoid.units {M : Type*} [Monoid M] (N : Submonoid M) :
+  Set Mˣ := {u : Mˣ | u.val ∈ N}
+
+/-- Units of a submonoid form a subgroup -/
+instance {M : Type*} [Monoid M] (N : Submonoid M) :
+  Subgroup Mˣ where
+  carrier := N.units
+  -- proofs...
+
+end AlgebraicComponents
+
+section TopologicalComponents
+
+/-- The units map preserves openness under certain conditions -/
+lemma IsOpen.units_preimage {M : Type*} [TopologicalSpace M] [Monoid M]
+  {S : Set M} (hS : IsOpen S) (hCont : ContinuousAt (fun x => x⁻¹) ?) :
+  IsOpen {u : Mˣ | u.val ∈ S} := sorry
+
+end TopologicalComponents
+
+section MainTheorem
+
+/-- Combining everything: main theorem -/
+theorem units_of_an_open_submonoid_form_an_open_subgroup
+  {M : Type*} [TopologicalSpace M] [Monoid M] [ContinuousMul M]
+  {N : Submonoid M} (hN : IsOpen (N : Set M)) :
+  IsOpen ((N.units : Set Mˣ)) := by
+  sorry
+
+end MainTheorem
