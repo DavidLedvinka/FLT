@@ -46,33 +46,11 @@ type classes mathlib for Lean 3Leanprover-community.
 
 To formalize the specific property you mentioned, you would likely need to:
 
-* Define what it means for a submonoid to be open in a topological monoid
-* Prove that the units of such an open submonoid inherit the subspace topology
-* Show that this forms an open subgroup of the group of units
+* `Define` what it means for a submonoid to be open in a topological monoid
+* `Prove` that the units of such an open submonoid inherit the subspace topology
+* `Show` that this forms an open subgroup of the group of units
 
 ---------------------------------------------------------------------
-
-import Mathlib.Topology.Algebra.Monoid
-import Mathlib.Algebra.Group.Units
-import Mathlib.Algebra.Group.Submonoid.Operations
-import Mathlib.Topology.Algebra.Group.Basic
-import Mathlib.Topology.Algebra.Constructions
-
-# Units of Open Submonoids Form Open Subgroups
-
-This file proves that the units of an open submonoid of a topological monoid
-form an open subgroup of the group of units.
-
-## Main Results
-
-* `Submonoid.units`: The units of a submonoid as a subset of Mˣ
-* `Submonoid.unitsSubgroup`: The units form a subgroup (algebraic)
-* `Submonoid.isOpen_units_coe`: Openness is preserved under the units embedding (topological)
-* `Submonoid.units_of_open_submonoid_form_open_subgroup`: Main theorem combining both aspects
-
-## Implementation Notes
-
-We separate algebraic and topological components for maximum reusability.
 
 -/
 
@@ -81,79 +59,66 @@ import Mathlib
 namespace Submonoid
 
 -- ============================================================================
--- SECTION: Algebraic Components (without Topology)
+-- SECTION: Algebraic Components (No topology needed)
 -- ============================================================================
 
 section AlgebraicComponents
 
 variable {M : Type*} [Monoid M]
 
-/-
+/-!
+# Units of Open Submonoids Form Open Subgroups
 
-/ -- The units of a submonoid, as a subset of the units of M - /
-def units (N : Submonoid M) : Set Mˣ :=
-  {u : Mˣ | ↑u ∈ N}
+This file proves that the units of an open submonoid of a topological monoid
+form an open subgroup of the group of units.
 
+## Main Results
+
+* `Submonoid.mem_units_iff`: Characterization of membership in `N.units`
+* `Submonoid.isOpen_units`: The units of an open submonoid form an open subset of Mˣ
+* `Submonoid.units_of_open_submonoid_form_open_subgroup`: Main theorem
+
+## Implementation Notes
+
+We use the existing `Submonoid.units` from mathlib, which defines the units as:
+  `S.comap (coeHom M) ⊓ (S.comap (coeHom M))⁻¹`
+This is equivalent to `{u : Mˣ | ↑u ∈ S ∧ ↑(u⁻¹) ∈ S}`.
 -/
 
-/-- The units of a submonoid equal the intersection N ∩ U(M) -/
-@[simp]
-lemma units_eq_inter (N : Submonoid M) :
-  N.units = {u : Mˣ | ↑u ∈ N} := rfl
+-- ============================================================================
+-- SECTION: Algebraic Components (using mathlib's definition)
+-- ============================================================================
 
-/-- Membership in submonoid units -/
-@[simp]
-lemma mem_units {N : Submonoid M} {u : Mˣ} :
-  u ∈ N.units ↔ ↑u ∈ N := Iff.rfl
+section AlgebraicComponents
 
-/-- The identity belongs to the units of any submonoid -/
-lemma units_one_mem (N : Submonoid M) : 1 ∈ N.units := by
-  simp [units]
-  exact N.one_mem
+variable {M : Type*} [Monoid M]
 
-/-- The units of a submonoid are closed under multiplication -/
-lemma units_mul_mem (N : Submonoid M) {a b : Mˣ}
-  (ha : a ∈ N.units) (hb : b ∈ N.units) : a * b ∈ N.units := by
-  simp [units] at ha hb ⊢
-  exact N.mul_mem ha hb
+/-- Membership in the units of a submonoid is characterized by both u and u⁻¹ being in N -/
+lemma mem_units_inter_iff {N : Submonoid M} {u : Mˣ} :
+  u ∈ N.units ↔ ↑u ∈ N ∧ ↑(u⁻¹) ∈ N := by
+  -- Unfold the definition from mathlib
+  simp only [units, Subgroup.mem_mk, Submonoid.mem_inf, Submonoid.mem_comap,
+             Submonoid.mem_inv, Units.coeHom_apply]
+  -- This gives us exactly what we want
+  rfl
 
-/-- Helper: If an element and its inverse are both in N, then it forms a unit of N -/
-lemma inv_mem_of_unit_mem (N : Submonoid M) {a : M}
-  (ha : a ∈ N) (h_unit : IsUnit a) (h_inv : a⁻¹ ∈ N) :
-  h_unit.unit ∈ N.units := by
-  simp [units]
-  convert ha
-  exact IsUnit.unit_spec h_unit
+/-- The carrier set of N.units equals {u : Mˣ | ↑u ∈ N ∧ ↑(u⁻¹) ∈ N} -/
+lemma units_carrier (N : Submonoid M) :
+  (N.units : Set Mˣ) = {u : Mˣ | ↑u ∈ N ∧ ↑(u⁻¹) ∈ N} := by
+  ext u
+  exact mem_units_inter_iff
 
-/-- The units of a submonoid are closed under inversion -/
-lemma units_inv_mem (N : Submonoid M) {a : Mˣ}
-  (ha : a ∈ N.units) : a⁻¹ ∈ N.units := by
-  simp [units] at ha ⊢
-  -- The key insight: if u ∈ N and u is a unit, then u⁻¹ must be in N
-  -- because u * u⁻¹ = 1 ∈ N and N is closed
-  have h1 : ↑a * ↑(a⁻¹) = 1 := Units.mul_inv a
-  have h_one : (1 : M) ∈ N := N.one_mem
-  -- Since a ∈ N and a * a⁻¹ = 1 ∈ N, and we can "divide" in the group of units
-  rw [Units.val_inv_eq_inv_val]
-  -- This is the algebraic heart of the matter
-  sorry -- Requires a lemma about division in submonoids containing units
-
-/-- The units of a submonoid form a subgroup of the ambient units -/
-def unitsSubgroup (N : Submonoid M) : Subgroup Mˣ where
-  carrier := N.units
-  one_mem' := units_one_mem N
-  mul_mem' := units_mul_mem N
-  inv_mem' := units_inv_mem N
+end AlgebraicComponents
 
 /-- The carrier of unitsSubgroup is the units set -/
 @[simp]
 lemma unitsSubgroup_carrier (N : Submonoid M) :
-  (N.unitsSubgroup : Set Mˣ) = N.units := rfl
+  (N.units : Set Mˣ) = N.units := rfl
 
 end AlgebraicComponents
 
 -- ============================================================================
--- SECTION: Topological Components (without algebra)
+-- SECTION: Topological Components (Topology without algebra)
 -- ============================================================================
 
 section TopologicalComponents
@@ -162,23 +127,12 @@ variable {M : Type*} [TopologicalSpace M]
 
 /-- The coercion map from units is continuous -/
 lemma continuous_units_coe [Monoid M] : Continuous (Units.val : Mˣ → M) :=
-  sorry -- requires a lemma in mathlib that states that coercion functions are continuous, e.g., [continuous_coe] or [Units.continuous_val] or [continuous_val]
+  Units.continuous_val
 
 /-- Preimage of open sets under the units coercion is open -/
 lemma isOpen_units_coe_preimage [Monoid M] {U : Set M} (hU : IsOpen U) :
   IsOpen (Units.val ⁻¹' U : Set Mˣ) :=
   continuous_units_coe.isOpen_preimage _ hU
-
-/-- The units embedding preserves openness in the subspace topology -/
-lemma units_embedding_open [Monoid M] : OpenEmbedding (Units.val : Mˣ → M) := by
-  -- The units map is an open embedding when we have continuous multiplication
-  sorry -- Requires showing that Units.val is an open map
-
-/-- General principle: intersection of open set with units is open -/
-lemma isOpen_inter_units [Monoid M] [ContinuousMul M] {U : Set M} (hU : IsOpen U) :
-  IsOpen {x ∈ U | IsUnit x} := by
-  -- The set of units is open in a topological monoid
-  sorry -- Requires lemma that units form an open set
 
 end TopologicalComponents
 
@@ -186,41 +140,41 @@ end TopologicalComponents
 -- SECTION: Combined Results (Algebraic + Topological)
 -- ============================================================================
 
-section AlgebraicTopological
+section CombinedResults
 
 variable {M : Type*} [Monoid M] [TopologicalSpace M]
 
-/-- If a submonoid is open, its units form an open set in Mˣ -/
+/-- If a submonoid is open, its units form an open subset in Mˣ -/
 theorem isOpen_units [ContinuousMul M] {N : Submonoid M} (hN : IsOpen (N : Set M)) :
   IsOpen (N.units : Set Mˣ) := by
-  -- N.units = Units.val⁻¹(N) by definition
-  have : N.units = Units.val ⁻¹' N := by
-    ext u; simp [units]
-  rw [this]
-  -- Apply continuity of Units.val
-  exact isOpen_units_coe_preimage hN
+  -- Use the characterization of N.units
+  rw [units_carrier]
 
-/-- The units subgroup of an open submonoid is open -/
-theorem unitsSubgroup_isOpen [ContinuousMul M] {N : Submonoid M} (hN : IsOpen (N : Set M)) :
-  IsOpen (N.unitsSubgroup : Set Mˣ) := by
-  rw [unitsSubgroup_carrier]
-  exact isOpen_units hN
+  -- We need to show {u : Mˣ | ↑u ∈ N ∧ ↑(u⁻¹) ∈ N} is open
+  -- This is the intersection of two open sets
+  simp only [Set.setOf_and]
+  apply IsOpen.inter
+
+  -- First set: {u : Mˣ | ↑u ∈ N} = Units.val ⁻¹' N
+  · have : {u : Mˣ | ↑u ∈ N} = Units.val ⁻¹' N := by ext; simp
+    rw [this]
+    exact isOpen_units_coe_preimage hN
+
+  -- Second set: {u : Mˣ | ↑(u⁻¹) ∈ N}
+  · have : {u : Mˣ | ↑(u⁻¹) ∈ N} = (fun u => u⁻¹) ⁻¹' (Units.val ⁻¹' N) := by
+      ext u; simp
+    rw [this]
+    -- The inverse map on units is continuous
+    apply Continuous.isOpen_preimage
+    · exact continuous_inv -- This uses ContinuousMul M
+    · exact isOpen_units_coe_preimage hN
 
 /-- Main theorem: The units of an open submonoid form an open subgroup -/
 theorem units_of_open_submonoid_form_open_subgroup
   [ContinuousMul M] {N : Submonoid M} (hN : IsOpen (N : Set M)) :
-  IsOpen (N.unitsSubgroup : Set Mˣ) :=
-  unitsSubgroup_isOpen hN
+  IsOpen (N.units : Set Mˣ) :=
+  isOpen_units hN
 
-/-- Alternate formulation emphasizing the intersection characterization -/
-theorem open_submonoid_units_eq_open_inter [ContinuousMul M] {N : Submonoid M}
-  (hN : IsOpen (N : Set M)) :
-  IsOpen ({u : Mˣ | ↑u ∈ N} : Set Mˣ) ∧
-  {u : Mˣ | ↑u ∈ N} = (N.unitsSubgroup : Set Mˣ) := by
-  constructor
-  · exact isOpen_units hN
-  · exact (unitsSubgroup_carrier N).symm
-
-end AlgebraicTopological
+end CombinedResults
 
 end Submonoid
