@@ -2,7 +2,7 @@
 -- Import modules here that should be built as part of the library.
 -- Units of an open submonoid of a topological monoid[s] are an open subgroup
 
-/----------------------------------------------------------------------
+/- ---------------------------------------------------------------------
 
 The units of an open submonoid of a topological monoid
 form an open subgroup of the group of units.
@@ -51,7 +51,7 @@ To formalize the specific property you mentioned, you would likely need to:
 * Prove that the units of such an open submonoid inherit the subspace topology
 * Show that this forms an open subgroup of the group of units
 
-----------------------------------------------------------------------/
+--------------------------------------------------------------------- -/
 
 import Mathlib
 
