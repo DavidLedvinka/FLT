@@ -52,6 +52,11 @@ To formalize the specific property you mentioned, you would likely need to:
 
 ---------------------------------------------------------------------
 
+import Mathlib.Topology.Algebra.Monoid
+import Mathlib.Algebra.Group.Units
+import Mathlib.Algebra.Group.Submonoid.Operations
+import Mathlib.Topology.Algebra.Group.Basic
+
 -/
 
 import Mathlib
