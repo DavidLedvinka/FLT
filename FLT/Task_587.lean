@@ -22,8 +22,8 @@ Since $N$ is open in $M$ and $U(M)$ has the subspace topology from $M$,
 the intersection $N \cap U(M) = U(N)$ is open in $U(M)$.
 
 Furthermore, $U(N)$ is indeed a subgroup of $U(M)$:
-it contains the identity, is closed under multiplication
-(since $N$ is a submonoid), and is closed under taking inverses
+it contains the Identity, is closed under Multiplication
+(since $N$ is a submonoid), and is closed under taking Inverses
 (by definition of being units in $N$).
 
 This result is particularly useful in algebraic topology and
