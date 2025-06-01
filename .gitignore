@@ -25,3 +25,4 @@ blueprint/lean_decls
 docbuild/*
 *.toc
 *.xdv
+*.code-workspace
