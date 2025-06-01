@@ -10,7 +10,7 @@ form an open subgroup of the group of units.
 Proof:
 
 Let $M$ be a topological monoid and $N \subseteq M$
-be an open submonoid. Let $U(M)$ and $U(N)$ denote the groups
+be an open  Let $U(M)$ and $U(N)$ denote the groups
 of units of $M$ and $N$ respectively.
 
 First, note that $U(N) = N \cap U(M)$. This is because a unit of
@@ -55,25 +55,31 @@ To formalize the specific property you mentioned, you would likely need to:
 
 import Mathlib
 
+namespace Submonoid
+
 /-- The units of a submonoid form a subgroup of the ambient units -/
-def Submonoid.unitsSubgroup {M : Type*} [Monoid M] (N : Submonoid M) :
+def unitsSubgroup {M : Type*} [Monoid M] (N : Submonoid M) :
   Subgroup Mˣ := sorry
 
 /-- If a submonoid is open, its underlying set of units is open -/
-lemma Submonoid.isOpen_units_set {M : Type*} [TopologicalSpace M] [Monoid M]
+lemma isOpen_units_set {M : Type*} [TopologicalSpace M] [Monoid M]
   {N : Submonoid M} (hN : IsOpen (N : Set M)) :
   IsOpen {x : M | x ∈ N ∧ IsUnit x} := sorry
 
 /-- The subgroup of units inherits openness from the submonoid -/
-lemma Submonoid.unitsSubgroup_isOpen {M : Type*} [TopologicalSpace M] [Monoid M]
+lemma unitsSubgroup_isOpen {M : Type*} [TopologicalSpace M] [Monoid M]
   [ContinuousMul M] {N : Submonoid M} (hN : IsOpen (N : Set M)) :
   IsOpen (N.unitsSubgroup : Set Mˣ) := sorry
 
 section AlgebraicComponents
 
-/-- Units of a submonoid, as a subset of the ambient units -/
-def Submonoid.units {M : Type*} [Monoid M] (N : Submonoid M) :
+/-
+
+/ -- Units of a submonoid, as a subset of the ambient units - /
+def units {M : Type*} [Monoid M] (N : Submonoid M) :
   Set Mˣ := {u : Mˣ | u.val ∈ N}
+
+-/
 
 /-- Units of a submonoid form a subgroup -/
 instance {M : Type*} [Monoid M] (N : Submonoid M) :
