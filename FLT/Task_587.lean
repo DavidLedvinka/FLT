@@ -98,20 +98,12 @@ section AlgebraicComponents
 
 variable {M : Type*} [Monoid M]
 
-/-- Membership in the units of a submonoid is characterized by both u and u⁻¹ being in N -/
-lemma mem_units_inter_iff {N : Submonoid M} {u : Mˣ} :
-  u ∈ N.units ↔ ↑u ∈ N ∧ ↑(u⁻¹) ∈ N := by
-  -- Unfold the definition from mathlib
-  simp only [units, Subgroup.mem_mk, Submonoid.mem_inf, Submonoid.mem_comap,
-             Submonoid.mem_inv, Units.coeHom_apply]
-  -- This gives us exactly what we want
-  rfl
-
 /-- The carrier set of N.units equals {u : Mˣ | ↑u ∈ N ∧ ↑(u⁻¹) ∈ N} -/
 lemma units_carrier (N : Submonoid M) :
   (N.units : Set Mˣ) = {u : Mˣ | ↑u ∈ N ∧ ↑(u⁻¹) ∈ N} := by
   ext u
-  exact mem_units_inter_iff
+  -- Use the existing mathlib lemma
+  exact N.mem_units_iff u
 
 end AlgebraicComponents
 
